@@ -15,7 +15,7 @@ class ScheduleApiResultTest extends TestCase
      */
     public function testApiWorkingScheduleResult()
     {
-        $response = $this->get('/schedule/?startDate=2018-01-09&endDate=2019-01-01&userId=1');
+        $response = $this->getJson('/schedule/?startDate=2018-01-09&endDate=2019-01-01&userId=1');
 
         $response->assertJsonStructure([
             [
@@ -29,7 +29,7 @@ class ScheduleApiResultTest extends TestCase
 
     public function testApiNotWorkingScheduleResult()
     {
-        $response = $this->get('/schedule/?startDate=2018-01-09&endDate=2019-01-01&userId=1&vacation');
+        $response = $this->getJson('/schedule/?startDate=2018-01-09&endDate=2019-01-01&userId=1&vacation');
 
         $response->assertJsonStructure([
             [

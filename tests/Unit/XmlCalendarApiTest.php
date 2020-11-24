@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Helpers\Calendar\XmlCalendarApi;
+use App\Helpers\Calendar\XmlCalendarApi\XmlCalendarApi;
 use Carbon\Carbon;
 use Tests\TestCase;
 

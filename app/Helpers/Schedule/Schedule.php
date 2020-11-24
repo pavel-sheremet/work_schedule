@@ -1,13 +1,15 @@
 <?php
 
 
-namespace App\Helpers\Calendar;
+namespace App\Helpers\Schedule;
 
 
+use App\Helpers\Calendar\CalendarInterface;
 use App\Models\SpecificVacation;
 use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Illuminate\Support\Collection;
 
 class Schedule
 {
@@ -16,16 +18,26 @@ class Schedule
     private $vacationDates = null;
     private $workingDates = null;
 
-    public function __construct(AbstractCalendar $calendar, User $user)
+    public function __construct(CalendarInterface $calendar, User $user)
     {
         $this->calendar = $calendar;
         $this->user = $user;
+        $this->setVacationDates();
+        $this->setWorkingDates();
     }
 
-    public function getVacationDates()
+    public function getVacationDates() : Collection
     {
-        if (!is_null($this->vacationDates)) return $this->vacationDates;
+        return $this->vacationDates;
+    }
 
+    public function getWorkingDates() : Collection
+    {
+        return $this->workingDates;
+    }
+
+    protected function setVacationDates()
+    {
         $period = [];
 
         foreach ($this->user->vacationSchedules as $vacationSchedule)
@@ -34,21 +46,14 @@ class Schedule
         }
 
         $this->vacationDates = collect($period);
-
-        return $this->vacationDates;
     }
 
-
-    public function getWorkingDates()
+    public function setWorkingDates()
     {
-        if (!is_null($this->workingDates)) return $this->workingDates;
-
         $this->workingDates = collect($this->calendar->getWorkingDates())->diff($this->getVacationDates());
-
-        return $this->workingDates;
     }
 
-    public function getSpecificDates()
+    public function getSpecificDates() : Collection
     {
         return SpecificVacation::whereBetween(
             'date_time_start',
@@ -121,23 +126,23 @@ class Schedule
             'timeRanges' => []
         ];
         $range = [];
-        $t = 0;
-        $f = null;
+        $startBreakCounter = 0;
+        $startBreakBool = null;
 
         foreach ($timePeriods as $period)
         {
             $isEndTime = isset($period['end_time']) && (bool)$period['end_time'];
-            $t = (!(bool)$period['start_break']) ? ++$t : --$t;
-            $f = !(bool)$period['start_break'];
+            $startBreakCounter = (!(bool)$period['start_break']) ? ++$startBreakCounter : --$startBreakCounter;
+            $startBreakBool = !(bool)$period['start_break'];
 
             if ($reverse)
             {
-                if ($t == 0 && !(bool)$f && !$isEndTime)
+                if ($startBreakCounter == 0 && !$startBreakBool && !$isEndTime)
                 {
                     $range['start'] = $period['time']->format('Hi');
                 }
 
-                if (($t == 1 && (bool)$f || $isEndTime) && isset($range['start']))
+                if (($startBreakCounter == 1 && $startBreakBool || $isEndTime) && isset($range['start']))
                 {
                     $range['end'] = $period['time']->format('Hi');
                     $timeRanges['timeRanges'][] = $range;
@@ -146,12 +151,12 @@ class Schedule
             }
             else
             {
-                if ($t == 1 && (bool)$f)
+                if ($startBreakCounter == 1 && $startBreakBool)
                 {
                     $range['start'] = $period['time']->format('Hi');
                 }
 
-                if ($t == 0 && !(bool)$f)
+                if ($startBreakCounter == 0 && !$startBreakBool)
                 {
                     $range['end'] = $period['time']->format('Hi');
                     $timeRanges['timeRanges'][] = $range;

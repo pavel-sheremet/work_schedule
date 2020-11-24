@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\Calendar\Schedule;
-use App\Helpers\Calendar\XmlCalendarApi;
+use App\Helpers\Schedule\Schedule;
+use App\Helpers\Calendar\XmlCalendarApi\XmlCalendarApi;
 use App\Http\Requests\ScheduleRequest;
+use App\Http\Resources\ScheduleResource;
 use Carbon\Carbon;
 use App\Models\User;
 
@@ -17,9 +18,9 @@ class ScheduleController extends Controller
             Carbon::parse($request->get('endDate'))
         );
 
-        $user = User::find($request->get('userId'));
+        $user = User::findOrFail($request->get('userId'));
         $schedule = new Schedule($calendar, $user);
 
-        return response()->json($schedule->getSchedule($request->has('vacation')));
+        return new ScheduleResource($schedule->getSchedule($request->has('vacation')));
     }
 }

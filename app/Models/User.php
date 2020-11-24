@@ -47,11 +47,11 @@ class User extends Authenticatable
 
     public function regularWorkSchedule ()
     {
-        return $this->hasOne(RegularWorkSchedule::class, 'user_id');
+        return $this->hasOne(RegularWorkSchedule::class);
     }
 
     public function vacationSchedules()
     {
-        return $this->hasMany(VacationSchedule::class, 'user_id');
+        return $this->hasMany(VacationSchedule::class);
     }
 }

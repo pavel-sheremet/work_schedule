@@ -2,8 +2,8 @@
 
 namespace Tests\Unit;
 
-use App\Helpers\Calendar\Schedule;
-use App\Helpers\Calendar\XmlCalendarApi;
+use App\Helpers\Calendar\XmlCalendarApi\XmlCalendarApi;
+use App\Helpers\Schedule\Schedule;
 use App\Models\User;
 use Carbon\Carbon;
 use Tests\TestCase;
